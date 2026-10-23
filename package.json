@@ -1,0 +1,34 @@
+{
+  "name": "ufo-tools-bento",
+  "version": "1.0.0",
+  "description": "Bloc Gutenberg UFO Bento : derniers articles, pages ou réalisations dans une grille bento (Tailwind CSS).",
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "format": "wp-scripts format",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "plugin-zip": "wp-scripts plugin-zip --config .distignore"
+  },
+  "keywords": [
+    "wordpress",
+    "gutenberg",
+    "block",
+    "tailwind"
+  ],
+  "author": "Ufo Agency",
+  "license": "GPL-2.0-or-later",
+  "devDependencies": {
+    "@wordpress/scripts": "^32.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "overrides": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "copy-webpack-plugin": "^14.0.0",
+    "markdownlint-cli": "^0.48.0"
+  }
+}
