@@ -10,6 +10,7 @@
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       ufo-tools-bento
+ * Update URI:        https://github.com/Vince-ALIEN/ufo-tools-bento
  *
  * @package UfoToolsBento
  */
@@ -17,6 +18,15 @@
 if (!defined("ABSPATH")) {
     exit();
 }
+
+require_once plugin_dir_path(__FILE__) . 'includes/class-ufo-tools-bento-updater.php';
+
+// Mises à jour depuis les releases GitHub (hors is_admin() : la
+// vérification des mises à jour tourne aussi en cron).
+add_action('plugins_loaded', function () {
+    $updater = new Ufo_Tools_Bento_Updater(plugin_basename(__FILE__), plugin_dir_path(__FILE__));
+    $updater->register_hooks();
+});
 
 // Le bloc garde son nom historique (ufo-blocks/ufo-bento) pour que les contenus
 // existants restent valides. Ufo Blocks ≤ 1.8.0 l'enregistre encore : priorité

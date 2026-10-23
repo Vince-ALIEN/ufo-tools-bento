@@ -26,11 +26,20 @@ Le plugin ne livre aucune CSS front. Il s'appuie sur un thème Tailwind CSS v4, 
 
 == Installation ==
 
+Depuis une release : télécharger `ufo-tools-bento.zip` depuis la [dernière release](https://github.com/Vince-ALIEN/ufo-tools-bento/releases/latest) et l'envoyer dans **Extensions → Ajouter → Téléverser une extension**. Installé ainsi, le plugin se met ensuite à jour depuis les releases GitHub comme n'importe quelle extension (pas sur une copie git, pour ne jamais écraser une copie de travail).
+
+Depuis les sources :
+
 1. Copier le dossier `ufo-tools-bento` dans `wp-content/plugins/`.
 2. `npm install && npm run build` (ou installer le zip produit par `npm run plugin-zip`).
 3. Activer **Ufo Tools Bento**.
+
+== Publier une release ==
+
+Mettre à jour `Version` dans le fichier principal, `Stable tag`, `package.json` et le changelog ci-dessous, commiter, puis pousser le tag correspondant (`git tag v1.0.1 && git push origin v1.0.1`). Le workflow `Release` construit le zip et l'attache à la release GitHub.
 
 == Changelog ==
 
 = 1.0.0 =
 * Bloc `ufo-bento` sorti d'Ufo Blocks 1.8.0 dans son propre plugin, sans changement de rendu.
+* Mises à jour depuis les releases GitHub.
