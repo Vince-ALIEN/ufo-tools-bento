@@ -112,14 +112,16 @@ final class Ufo_Tools_Bento_Updater {
 
 	/**
 	 * Dernière release publiée, mise en cache (6 h, 1 h après une erreur).
-	 * « Vérifier à nouveau » sur l'écran des mises à jour contourne le cache.
+	 * « Vérifier à nouveau » sur l'écran des mises à jour contourne le cache,
+	 * pour un utilisateur qui peut mettre à jour les plugins seulement
+	 * (is_admin() est vrai aussi sur admin-ajax.php, sans connexion).
 	 * Sans authentification, l'API GitHub limite à 60 requêtes par heure et
 	 * par IP : le cache évite d'atteindre ce plafond sur un serveur mutualisé.
 	 *
 	 * @return array|null
 	 */
 	private function get_release() {
-		$force  = is_admin() && isset( $_GET['force-check'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$force  = isset( $_GET['force-check'] ) && current_user_can( 'update_plugins' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$cached = $force ? false : get_site_transient( self::CACHE_KEY );
 
 		if ( is_array( $cached ) && array_key_exists( 'release', $cached ) ) {
@@ -177,10 +179,16 @@ final class Ufo_Tools_Bento_Updater {
 			return null;
 		}
 
+		// Lien de la release : une page de ce dépôt, sinon la liste des releases.
+		$url = isset( $data['html_url'] ) ? (string) $data['html_url'] : '';
+		if ( 0 !== strpos( $url, 'https://github.com/' . self::REPO . '/' ) ) {
+			$url = 'https://github.com/' . self::REPO . '/releases';
+		}
+
 		return array(
 			'version'      => $version,
 			'package'      => $package,
-			'url'          => isset( $data['html_url'] ) ? (string) $data['html_url'] : 'https://github.com/' . self::REPO . '/releases',
+			'url'          => $url,
 			'body'         => trim( isset( $data['body'] ) ? (string) $data['body'] : '' ),
 			'published_at' => isset( $data['published_at'] ) ? (string) $data['published_at'] : '',
 		);

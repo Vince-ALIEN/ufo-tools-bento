@@ -2,9 +2,9 @@
 /**
  * Plugin Name:       Ufo Tools Bento
  * Description:       Bloc Gutenberg UFO Bento : derniers articles, pages ou réalisations dans une grille bento (Tailwind CSS).
- * Requires at least: 6.1
+ * Requires at least: 6.5
  * Requires PHP:      7.4
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            UFO Agency
  * Author URI:        https://ufo-agency.com
  * License:           GPL-2.0-or-later

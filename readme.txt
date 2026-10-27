@@ -1,10 +1,10 @@
 === Ufo Tools Bento ===
 Contributors: ufoagency
 Tags: gutenberg, block, tailwind
-Requires at least: 6.1
+Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,14 @@ Depuis les sources :
 Mettre à jour `Version` dans le fichier principal, `Stable tag`, `package.json` et le changelog ci-dessous, commiter, puis pousser le tag correspondant (`git tag v1.0.1 && git push origin v1.0.1`). Le workflow `Release` construit le zip et l'attache à la release GitHub.
 
 == Changelog ==
+
+= 1.0.1 =
+* Sécurité : `render.php` s'arrête s'il est appelé directement.
+* Sécurité : contournement du cache des mises à jour (« Vérifier à nouveau ») réservé aux utilisateurs qui peuvent mettre à jour les plugins.
+* Lien de la release accepté seulement s'il pointe vers le dépôt du plugin.
+* Désinstallation : suppression du cache de la dernière release.
+* WordPress 6.5 minimum (l'éditeur du bloc utilise `useSettings`).
+* Fichier `LICENSE` (GPL v2).
 
 = 1.0.0 =
 * Bloc `ufo-bento` sorti d'Ufo Blocks 1.8.0 dans son propre plugin, sans changement de rendu.

@@ -41,6 +41,7 @@ jobs:
         run: |
           unzip -l ufo-tools-bento.zip > files.txt
           grep -q ' ufo-tools-bento/ufo-tools-bento.php$' files.txt
+          grep -q ' ufo-tools-bento/uninstall.php$' files.txt
           grep -q ' ufo-tools-bento/includes/class-ufo-tools-bento-updater.php$' files.txt
           grep -q ' ufo-tools-bento/build/ufo-bento/block.json$' files.txt
 

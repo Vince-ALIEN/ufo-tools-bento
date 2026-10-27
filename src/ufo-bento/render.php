@@ -10,6 +10,10 @@
  * Variables disponibles : $attributes, $content, $block.
  */
 
+if (!defined("ABSPATH")) {
+    exit();
+}
+
 // Types de contenu autorisés : l'attribut vient du contenu du bloc, on ne
 // requête jamais un type arbitraire (privé, non public…).
 $allowed_post_types = array('page', 'post', 'realisation');

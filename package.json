@@ -1,6 +1,6 @@
 {
   "name": "ufo-tools-bento",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bloc Gutenberg UFO Bento : derniers articles, pages ou réalisations dans une grille bento (Tailwind CSS).",
   "scripts": {
     "build": "wp-scripts build",
