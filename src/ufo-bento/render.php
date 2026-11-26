@@ -14,18 +14,26 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-// Types de contenu autorisés : l'attribut vient du contenu du bloc, on ne
-// requête jamais un type arbitraire (privé, non public…).
-$allowed_post_types = array('page', 'post', 'realisation');
+// Types de contenu : tout type public du site (pages, articles, CPT du thème).
+// L'attribut vient du contenu du bloc : on ne requête jamais un type
+// inexistant, non public ou absent de l'API REST (même règle que edit.js).
+if (!function_exists('ufo_bento_is_allowed_post_type')) {
+    function ufo_bento_is_allowed_post_type($post_type) {
+        $excluded = array('attachment', 'wp_block', 'wp_template', 'wp_template_part', 'wp_navigation');
+        $object   = get_post_type_object($post_type);
+
+        return $object
+            && !in_array($post_type, $excluded, true)
+            && $object->show_in_rest
+            && is_post_type_viewable($object);
+    }
+}
 
 $post_type = isset($attributes['postType']) ? (string) $attributes['postType'] : 'page';
-if (!in_array($post_type, $allowed_post_types, true) || !post_type_exists($post_type) || !is_post_type_viewable($post_type)) {
+if (!ufo_bento_is_allowed_post_type($post_type)) {
     $post_type = 'page';
 }
 
-$page_category  = absint($attributes['pageCategory'] ?? 0);
-$post_category  = absint($attributes['postCategory'] ?? 0);
-$admin_category = absint($attributes['adminCategory'] ?? 0);
 $posts_to_show  = min(5, max(1, absint($attributes['postsToShow'] ?? 5)));
 
 // Helper : couleurs de la palette theme.json assez sombres pour le texte blanc
@@ -80,17 +88,24 @@ $wrapper_attributes = get_block_wrapper_attributes(array(
     'style' => '--ufo-bento-color: ' . $background_value . ';',
 ));
 
-// Helper : taxonomie de catégories selon le type de contenu
+// Helper : taxonomie de catégories d'un type de contenu. La première taxonomie
+// publique et hiérarchique, sinon la première publique (même règle que edit.js).
 if (!function_exists('ufo_bento_taxonomy')) {
     function ufo_bento_taxonomy($post_type) {
-        $taxonomies = array(
-            'page'        => 'page_category',
-            'post'        => 'category',
-            'realisation' => 'type_realisation',
+        $candidates = array_filter(
+            get_object_taxonomies($post_type, 'objects'),
+            function ($taxonomy) {
+                return $taxonomy->public && $taxonomy->show_in_rest;
+            }
         );
-        $taxonomy = $taxonomies[$post_type] ?? '';
+        foreach ($candidates as $taxonomy) {
+            if ($taxonomy->hierarchical) {
+                return $taxonomy->name;
+            }
+        }
+        $first = reset($candidates);
 
-        return ($taxonomy && taxonomy_exists($taxonomy)) ? $taxonomy : '';
+        return $first ? $first->name : '';
     }
 }
 
@@ -207,11 +222,14 @@ if (!function_exists('ufo_bento_get_image')) {
 }
 
 $taxonomy = ufo_bento_taxonomy($post_type);
-$category = array(
-    'page'        => $page_category,
-    'post'        => $post_category,
-    'realisation' => $admin_category,
-)[$post_type];
+
+// Catégorie filtrée : `category`, ou pour les blocs enregistrés avant la 1.1.0
+// l'ancien attribut propre au type (pageCategory, postCategory, adminCategory).
+$category = absint($attributes['category'] ?? 0);
+if (!$category) {
+    $legacy = array('page' => 'pageCategory', 'post' => 'postCategory');
+    $category = absint($attributes[$legacy[$post_type] ?? 'adminCategory'] ?? 0);
+}
 
 // Arguments de la requête WP_Query
 $args = array(
@@ -306,14 +324,11 @@ if ($total > 0) {
         implode('', $items) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     );
 } else {
-    $no_content = array(
-        'page'        => __('Aucune page trouvée.', 'ufo-tools-bento'),
-        'post'        => __('Aucun article trouvé.', 'ufo-tools-bento'),
-        'realisation' => __('Aucune réalisation trouvée.', 'ufo-tools-bento'),
-    );
+    $labels     = get_post_type_labels(get_post_type_object($post_type));
+    $no_content = $labels->not_found ?: __('Aucun contenu trouvé.', 'ufo-tools-bento');
     printf(
         '<div %s><p>%s</p></div>',
         $wrapper_attributes, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        esc_html($no_content[$post_type])
+        esc_html($no_content)
     );
 }

@@ -10,27 +10,25 @@ import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 import ServerSideRender from '@wordpress/server-side-render';
 
-// Mêmes correspondances que render.php
-const POST_TYPES = {
-    page: {
-        label: __('Pages', 'ufo-tools-bento'),
-        taxonomy: 'page_category',
-        attribute: 'pageCategory',
-        categoryLabel: __('Catégorie de page', 'ufo-tools-bento'),
-    },
-    post: {
-        label: __('Articles', 'ufo-tools-bento'),
-        taxonomy: 'category',
-        attribute: 'postCategory',
-        categoryLabel: __('Catégorie', 'ufo-tools-bento'),
-    },
-    realisation: {
-        label: __('Réalisations', 'ufo-tools-bento'),
-        taxonomy: 'type_realisation',
-        attribute: 'adminCategory',
-        categoryLabel: __('Type de réalisation', 'ufo-tools-bento'),
-    },
-};
+// Types jamais proposés (mêmes exclusions que render.php)
+const EXCLUDED_POST_TYPES = [
+    'attachment',
+    'wp_block',
+    'wp_template',
+    'wp_template_part',
+    'wp_navigation',
+];
+
+// Anciens attributs de catégorie, propres au type (blocs d'avant la 1.1.0)
+const LEGACY_CATEGORY = { page: 'pageCategory', post: 'postCategory' };
+const legacyCategoryAttribute = (postType) => LEGACY_CATEGORY[postType] ?? 'adminCategory';
+
+// Taxonomie de catégories : la première publique et hiérarchique, sinon la
+// première publique (même règle que render.php)
+function pickTaxonomy(taxonomies) {
+    const candidates = (taxonomies ?? []).filter((tax) => tax.visibility?.public);
+    return candidates.find((tax) => tax.hierarchical) ?? candidates[0] ?? null;
+}
 
 // Contraste avec le texte blanc des cartes (mêmes règles que render.php)
 function contrastWithWhite(color) {
@@ -63,25 +61,34 @@ export default function Edit({ attributes, setAttributes }) {
         (color) => contrastWithWhite(color.color) >= 4.5
     );
     const currentBackground = backgroundColors.find((color) => color.slug === backgroundColor);
-    const config = POST_TYPES[postType] ?? POST_TYPES.page;
-    const currentCategory = attributes[config.attribute] ?? 0;
+    const currentCategory =
+        attributes.category || attributes[legacyCategoryAttribute(postType)] || 0;
 
-    const { availableTypes, categories } = useSelect(
+    const { postTypeOptions, taxonomy, categories } = useSelect(
         (select) => {
-            const { getPostTypes, getTaxonomy, getEntityRecords } = select(coreStore);
-            const existing = getPostTypes({ per_page: -1 }) ?? [];
-            const taxonomyExists = !!getTaxonomy(config.taxonomy);
+            const { getPostTypes, getEntityRecords } = select(coreStore);
+
+            const options = (getPostTypes({ per_page: -1 }) ?? [])
+                .filter((type) => type.viewable && !EXCLUDED_POST_TYPES.includes(type.slug))
+                .map((type) => ({ value: type.slug, label: type.name }));
+            // Type enregistré mais absent du site : on le garde pour ne pas vider le menu
+            if (!options.some((option) => option.value === postType)) {
+                options.push({ value: postType, label: postType });
+            }
+
+            const tax = pickTaxonomy(
+                getEntityRecords('root', 'taxonomy', { type: postType, per_page: -1 })
+            );
 
             return {
-                availableTypes: Object.keys(POST_TYPES).filter(
-                    (slug) => slug === postType || existing.some((type) => type.slug === slug)
-                ),
-                categories: taxonomyExists
-                    ? getEntityRecords('taxonomy', config.taxonomy, { per_page: -1, _fields: 'id,name' })
+                postTypeOptions: options,
+                taxonomy: tax,
+                categories: tax
+                    ? getEntityRecords('taxonomy', tax.slug, { per_page: -1, _fields: 'id,name' })
                     : [],
             };
         },
-        [postType, config.taxonomy]
+        [postType]
     );
 
     const blockProps = useBlockProps();
@@ -94,24 +101,32 @@ export default function Edit({ attributes, setAttributes }) {
                         __nextHasNoMarginBottom
                         label={__('Type de contenu', 'ufo-tools-bento')}
                         value={postType}
-                        options={availableTypes.map((slug) => ({
-                            value: slug,
-                            label: POST_TYPES[slug].label,
-                        }))}
-                        onChange={(value) => setAttributes({ postType: value })}
+                        options={postTypeOptions}
+                        onChange={(value) =>
+                            setAttributes({
+                                postType: value,
+                                category: 0,
+                                pageCategory: 0,
+                                postCategory: 0,
+                                adminCategory: 0,
+                            })
+                        }
                     />
 
                     {categories?.length > 0 && (
                         <SelectControl
                             __nextHasNoMarginBottom
-                            label={config.categoryLabel}
+                            label={taxonomy.labels?.singular_name ?? taxonomy.name}
                             value={currentCategory}
                             options={[
                                 { value: 0, label: __('Toutes les catégories', 'ufo-tools-bento') },
                                 ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
                             ]}
                             onChange={(value) =>
-                                setAttributes({ [config.attribute]: Number(value) })
+                                setAttributes({
+                                    category: Number(value),
+                                    [legacyCategoryAttribute(postType)]: 0,
+                                })
                             }
                         />
                     )}

@@ -4,17 +4,17 @@ Tags: gutenberg, block, tailwind
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Les derniers articles, pages ou réalisations dans une grille bento.
+Les derniers contenus d'un type public (articles, pages, types personnalisés) dans une grille bento.
 
 == Description ==
 
 Bloc `ufo-blocks/ufo-bento` extrait du plugin Ufo Blocks (jusqu'à la version 1.8.0). Le nom du bloc et ses attributs sont inchangés : les contenus existants restent valides.
 
-Rendu côté serveur ; grille prévue pour 2 éléments (une ligne) ou 5 (deux lignes), mise en page aussi correcte pour 1, 3 et 4. Filtrage par catégorie (`page_category`, `category`, `type_realisation`), couleur des cartes choisie dans la palette `theme.json` (contraste AA avec le texte blanc). Un thème peut fournir une image par défaut avec le filtre `ufo_bento_default_image_url`.
+Rendu côté serveur ; grille prévue pour 2 éléments (une ligne) ou 5 (deux lignes), mise en page aussi correcte pour 1, 3 et 4. Tous les types de contenu publics du site sont proposés, y compris les types personnalisés du thème. Filtrage par catégorie : la première taxonomie publique et hiérarchique du type (sinon la première publique), couleur des cartes choisie dans la palette `theme.json` (contraste AA avec le texte blanc). Un thème peut fournir une image par défaut avec le filtre `ufo_bento_default_image_url`.
 
 Le bloc apparaît dans la catégorie « UFO Blocks » de l'éditeur, que Ufo Blocks soit installé ou non.
 
@@ -39,6 +39,11 @@ Depuis les sources :
 Mettre à jour `Version` dans le fichier principal, `Stable tag`, `package.json` et le changelog ci-dessous, commiter, puis pousser le tag correspondant (`git tag v1.0.1 && git push origin v1.0.1`). Le workflow `Release` construit le zip et l'attache à la release GitHub.
 
 == Changelog ==
+
+= 1.1.0 =
+* Le bloc propose de nouveau tous les types de contenu publics du site, dont les types personnalisés du thème (par exemple `administratif`), comme dans Ufo Blocks. La 1.0.x se limitait à `page`, `post` et `realisation`.
+* Catégorie : la taxonomie est détectée pour chaque type, avec un seul attribut `category`. Les anciens attributs (`pageCategory`, `postCategory`, `adminCategory`) sont toujours lus.
+* Message « aucun contenu » tiré des libellés du type de contenu.
 
 = 1.0.1 =
 * Sécurité : `render.php` s'arrête s'il est appelé directement.
